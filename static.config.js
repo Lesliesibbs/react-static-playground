@@ -119,6 +119,7 @@ export default {
                     ],
                     flexbox: 'no-2009',
                   }),
+                  tailwindcss(path.resolve(__dirname, './tailwind.config.js')),
                 ],
               },
             },
