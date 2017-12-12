@@ -1,8 +1,11 @@
+import path from 'path'
+
 import axios from 'axios'
 
 import autoprefixer from 'autoprefixer'
 import ExtractTextPlugin from 'extract-text-webpack-plugin'
 import postcssFlexbugsFixes from 'postcss-flexbugs-fixes'
+import tailwindcss from 'tailwindcss'
 
 export default {
   getSiteProps: () => ({
@@ -72,6 +75,7 @@ export default {
                   ],
                   flexbox: 'no-2009',
                 }),
+                tailwindcss(path.resolve(__dirname, './tailwind.config.js')),
               ],
             },
           },
