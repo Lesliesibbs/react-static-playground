@@ -17,8 +17,6 @@
   },
   "devDependencies": {
     "eslint-config-react-tools": "1.x.x",
-    "postcss-cssnext": "^3.0.2",
-    "postcss-import": "^11.0.0",
     "serve": "^6.1.0"
   }
 }
