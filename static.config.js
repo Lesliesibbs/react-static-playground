@@ -1,11 +1,7 @@
-import path from 'path'
-
 import axios from 'axios'
 
-import autoprefixer from 'autoprefixer'
-import ExtractTextPlugin from 'extract-text-webpack-plugin'
-import postcssFlexbugsFixes from 'postcss-flexbugs-fixes'
-import tailwindcss from 'tailwindcss'
+// Paths Aliases defined through tsconfig.json
+const typescriptWebpackPaths = require('./webpack.config.js')
 
 export default {
   getSiteProps: () => ({
@@ -42,101 +38,35 @@ export default {
       },
     ]
   },
-  webpack: (config, { stage, defaultLoaders }) => {
-    let cssLoader = {}
+  webpack: (config, { defaultLoaders }) => {
+    // Add .ts and .tsx extension to resolver
+    config.resolve.extensions.push('.ts', '.tsx')
 
-    if (stage === 'dev') {
-      cssLoader = {
-        test: /\.css$/,
-        use: [
-          'style-loader',
-          {
-            loader: 'css-loader',
-            options: {
-              sourceMap: true,
-              importLoaders: 1,
-            },
-          },
-          {
-            loader: 'postcss-loader',
-            options: {
-              // Necessary for external CSS imports to work
-              // https://github.com/facebookincubator/create-react-app/issues/2677
-              sourceMap: true,
-              ident: 'postcss',
-              plugins: () => [
-                postcssFlexbugsFixes,
-                autoprefixer({
-                  browsers: [
-                    '>1%',
-                    'last 4 versions',
-                    'Firefox ESR',
-                    'not ie < 9', // React doesn't support IE8 anyway
-                  ],
-                  flexbox: 'no-2009',
-                }),
-                tailwindcss(path.resolve(__dirname, './tailwind.config.js')),
-              ],
-            },
-          },
-        ],
-      }
-    } else {
-      cssLoader = {
-        test: /\.css$/,
-        loader: ExtractTextPlugin.extract({
-          fallback: {
-            loader: 'style-loader',
-            options: {
-              sourceMap: false,
-              hmr: false,
-            },
-          },
-          use: [
-            {
-              loader: 'css-loader',
-              options: {
-                importLoaders: 1,
-                minimize: true,
-                sourceMap: false,
-              },
-            },
-            {
-              loader: 'postcss-loader',
-              options: {
-                // Necessary for external CSS imports to work
-                // https://github.com/facebookincubator/create-react-app/issues/2677
-                sourceMap: true,
-                ident: 'postcss',
-                plugins: () => [
-                  postcssFlexbugsFixes,
-                  autoprefixer({
-                    browsers: [
-                      '>1%',
-                      'last 4 versions',
-                      'Firefox ESR',
-                      'not ie < 9', // React doesn't support IE8 anyway
-                    ],
-                    flexbox: 'no-2009',
-                  }),
-                  tailwindcss(path.resolve(__dirname, './tailwind.config.js')),
-                ],
-              },
-            },
-          ],
-        }),
-      }
-    }
+    // Add TypeScript Path Mappings (from tsconfig via webpack.config.js)
+    // to react-statics alias resolution
+    config.resolve.alias = typescriptWebpackPaths.resolve.alias
 
+    // We replace the existing JS rule with one, that allows us to use
+    // both TypeScript and JavaScript interchangeably
     config.module.rules = [
       {
         oneOf: [
           {
-            test: /\.json$/,
-            use: [{ loader: 'json-loader' }],
+            test: /\.(js|jsx|ts|tsx)$/,
+            exclude: defaultLoaders.jsLoader.exclude, // as std jsLoader exclude
+            use: [
+              {
+                loader: 'babel-loader',
+              },
+              {
+                loader: require.resolve('ts-loader'),
+                options: {
+                  transpileOnly: true,
+                },
+              },
+            ],
           },
-          defaultLoaders.jsLoader,
-          cssLoader,
+          defaultLoaders.cssLoader,
           defaultLoaders.fileLoader,
         ],
       },

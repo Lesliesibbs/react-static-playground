@@ -13,7 +13,7 @@ export default () => (
         <Link to="/about">About</Link>
         <Link to="/blog">Blog</Link>
       </nav>
-      <div className="container mx-auto">
+      <div className="content">
         <Routes />
       </div>
     </div>
